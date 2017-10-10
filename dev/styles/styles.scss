@@ -1,0 +1,73 @@
+@import "partials/setup";
+@import "partials/global";
+@import "partials/variables";
+@import "partials/mixins";
+
+body {
+	background: $orange;
+}
+
+header {
+	background: $navy;
+	color: white;
+	padding: 10rem 0;
+}
+
+header .wrapper {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+h1  {
+	font-size: 5rem;
+	span {
+		text-transform: lowercase;
+		font-style: italic;
+	}
+}
+
+.hidden {
+	visibility: hidden;
+}
+
+.searchForm input{
+	border: none;
+	font-size: 2rem;
+	padding: 1rem;
+	margin-right: 1rem;
+}
+
+.searchBtn {
+	border: none;
+	background: $orange;
+	text-transform: uppercase;
+	font-size: 2rem;
+	padding: 1rem;
+	color: white;
+}
+
+
+// GALLERY
+
+.gifGallery {
+	padding: 10rem 0;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.gifContainer {
+	width: 33.33%;
+	max-height: 23rem;
+	padding: 0 1rem;
+	margin: 1rem 0;
+	overflow: hidden;
+	img {
+		width: 100%;
+		overflow: hidden;
+	}
+}
+

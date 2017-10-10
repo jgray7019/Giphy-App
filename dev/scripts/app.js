@@ -1,91 +1,122 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { ajax } from 'jquery';
-import request from 'superagent';
+import axios from 'axios';
+// import request from 'superagent';
 
 class Header extends React.Component {
 	render() {
 		return (
-			<header>
-				<h1>Gif Thing</h1>
-			</header>
+			<div className="mainTitle">
+			<h1>Gif<span>search</span></h1>
+    		</div>
 		);
 	}
 }
 
-class Search extends React.Component {
+class SearchForm extends React.Component {
 	constructor() {
 		super();
 		this.state = {
-			searchInput: ''
-			};
+			searchText: ''
 		}
+		this.handleSubmit = this.handleSubmit.bind(this);
+		this.onSearchChange = this.onSearchChange.bind(this);
+	}
+
+	onSearchChange(e) {
+		this.setState({
+			searchText: e.target.value
+		});
+	}
+
+	handleSubmit(e) {
+		e.preventDefault();
+		this.props.onSearch(this.state.searchText);
+		e.currentTarget.reset();
+	}
 
 
-		onInputChange(searchInput) {
-			this.setState({searchInput});
-			this.props.onSearchInputChange(searchInput);
-		}
+	render() {
+		return (
+			<form className="searchForm" onSubmit={this.handleSubmit}>
+				<label htmlFor="search" className="hidden">Search</label>
+				<input type="search"
+						onChange={this.onSearchChange}
+						name="searchText"
 
-		render() {
-			return (
-				<div className="searchBar">
-					<input onChange={event => this.onInputChange(event.target.value)} type="text" />
-				</div>
-			);
+						placeholder="Search for Gifs Here!" />
+				<button type="submit" id="submit" className="searchBtn">Submit</button>
+			</form>
+		);
 	}
 }
 
-const GifGallery = (props) => {
-	const gifItems = props.gifs.map((image) => {
-		return <GifItem key={image.id} gif={image} />
-	});
 
-	return (
-		<ul>{gifItems}</ul>
+const GifGallery = props => {
+
+	const results = props.data;
+	let gifs = results.map(gif => 
+		<Gif url={gif.images.fixed_height.url} key={gif.id}/>
 	);
-};
 
-const GifItem = (image) => {
 	return (
-		<li>
-			<img src={image.gif.images.downsized.url} />
-		</li>
-	)
+
+		<ul className='gifGallery'>
+			{gifs}
+		</ul>
+	);
 }
 
-
+const Gif = props => (
+		<li className='gifContainer'>
+			<img src={props.url} alt=""/>
+		</li>
+	)
 
 
 class App extends React.Component {
 	constructor() {
 		super();
 		this.state= {
-			gifs: []
+			gifs: [],
+			searchText: ''
 		};
-
-		this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
+		this.search = this.search.bind(this);
 	}
 
-	handleSearchInputChange(searchInput) {
-		const url = `https://api.giphy.com/v1/gifs/search?api_key=10FVTMijac0PRGpgEUDcmxrTdhqUORRu&q=${searchInput.replace(/\s/g, '+')}&limit=25&offset=0&rating=G&lang=en`;
-
-		request.get(url, (err, res) => {
-			// console.log(res.body.data[0]);
-			this.setState(
-				{ gifs: res.body.data }
-			);
-		});
+	componentDidMount() {
+		// this.search();
 	}
+
+	search(query) {
+				axios.get(`https://api.giphy.com/v1/gifs/search?q=${query}&api_key=10FVTMijac0PRGpgEUDcmxrTdhqUORRu&limit=24&rating=G`)
+		.then((res) => {
+			console.log(res);
+			this.setState({
+				gifs: res.data.data
+			});
+		})	
+	}
+
     render() {
+    	console.log(this.state.gifs);
       return (
-        <div>
-        	<Header />
-        	<Search onSearchInputChange={this.handleSearchInputChange} />
-        	<GifGallery gifs={this.state.gifs}/>
+      	<div>
+	        <header>
+	        	<div className="wrapper">
+		        	<Header />
+		        	<SearchForm onSearch={this.search}/>
+	        	</div>
+	        </header>
+	        <div className="wrapper">
+        	<GifGallery data={this.state.gifs} />
+        	</div>
         </div>
       )
     }
 }
 
 ReactDOM.render(<App />, document.getElementById('app'));
+
+	// <form onSubmit={this.handleSearchInputChange, event => event.preventDefault()}>
