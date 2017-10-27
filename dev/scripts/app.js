@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { ajax } from 'jquery';
 import axios from 'axios';
+import InvalidSearch from './InvalidSearch.js';
 // import request from 'superagent';
 
 class Header extends React.Component {
@@ -32,10 +33,9 @@ class SearchForm extends React.Component {
 
 	handleSubmit(e) {
 		e.preventDefault();
-		this.props.onSearch(this.state.searchText);
+		this.props.onSearch(this.query.value);
 		e.currentTarget.reset();
 	}
-
 
 	render() {
 		return (
@@ -44,7 +44,7 @@ class SearchForm extends React.Component {
 				<input type="search"
 						onChange={this.onSearchChange}
 						name="searchText"
-
+						ref={(input) => this.query = input}
 						placeholder="Search for Gifs Here!" />
 				<button type="submit" id="submit" className="searchBtn">Submit</button>
 			</form>
@@ -52,13 +52,26 @@ class SearchForm extends React.Component {
 	}
 }
 
+class LoadMore extends React.Component {
+	render() {
+		return (
+			<button className="loadMoreBtn">Load More</button>
+		)
+	}
+}
 
 const GifGallery = props => {
 
 	const results = props.data;
-	let gifs = results.map(gif => 
-		<Gif url={gif.images.fixed_height.url} key={gif.id}/>
-	);
+	let gifs;
+	if (results.length > 0) {
+		gifs = results.map(gif => 
+			<Gif url={gif.images.fixed_height.url} key={gif.id}/>
+		);
+		} else {
+			gifs = <InvalidSearch />
+		}
+	
 
 	return (
 
@@ -80,21 +93,24 @@ class App extends React.Component {
 		super();
 		this.state= {
 			gifs: [],
-			searchText: ''
+			searchText: '',
+			loading: true,
+			limit: 24
 		};
 		this.search = this.search.bind(this);
 	}
 
 	componentDidMount() {
-		// this.search();
+		this.search();
 	}
 
-	search(query) {
-				axios.get(`https://api.giphy.com/v1/gifs/search?q=${query}&api_key=10FVTMijac0PRGpgEUDcmxrTdhqUORRu&limit=24&rating=G`)
+	search(query = 'welcome', limit = 24) {
+				axios.get(`https://api.giphy.com/v1/gifs/search?q=${query}&api_key=10FVTMijac0PRGpgEUDcmxrTdhqUORRu&limit=${limit}&rating=G`)
 		.then((res) => {
 			console.log(res);
 			this.setState({
-				gifs: res.data.data
+				gifs: res.data.data,
+				loading: false
 			});
 		})	
 	}
@@ -110,7 +126,14 @@ class App extends React.Component {
 	        	</div>
 	        </header>
 	        <div className="wrapper">
-        	<GifGallery data={this.state.gifs} />
+	        	{
+	        		(this.state.loading)
+	        		? 
+	        		<p>Loading...</p>
+	        		:
+	        		<GifGallery data={this.state.gifs} />
+	        		// <LoadMore />
+	        	}
         	</div>
         </div>
       )
